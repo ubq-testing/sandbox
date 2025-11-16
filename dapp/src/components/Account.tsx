@@ -1,15 +1,17 @@
-'use client'
+import React from 'react';
+import { useAccount, useEnsName } from 'wagmi';
 
-import { useAccount, useEnsName } from 'wagmi'
+function Account() {
+  const { address } = useAccount();
+  const { data: ensName } = useEnsName({ address });
 
-export function Account() {
-  const { address } = useAccount()
-  const { data: ensName } = useEnsName({ address })
+  const displayName = ensName ? `${ensName} (${address})` : address;
 
   return (
     <div>
-      {ensName ?? address}
-      {ensName ? ` (${address})` : null}
+      {displayName}
     </div>
-  )
+  );
 }
+
+export default Account;

@@ -1,48 +1,42 @@
-'use client'
-
-import { useState } from 'react'
-import { useNetwork, useWaitForTransaction } from 'wagmi'
-
+import React, { useState } from 'react';
 import {
-  useCounterIncrement,
   useCounterNumber,
   useCounterSetNumber,
+  useCounterIncrement,
   usePrepareCounterIncrement,
   usePrepareCounterSetNumber,
-} from '../generated'
+  useWaitForTransaction,
+  useNetwork,
+} from 'wagmi';
 
-export function Counter() {
+function Counter() {
   return (
     <div>
       <Count />
       <SetNumber />
       <Increment />
     </div>
-  )
+  );
 }
 
 function Count() {
-  const { data: count } = useCounterNumber()
-  return <div>Count: {count?.toString()}</div>
+  const { data: count } = useCounterNumber();
+  return <div>Count: {count?.toString()}</div>;
 }
 
 function SetNumber() {
-  const [value, setValue] = useState('')
-
-  const { config } = usePrepareCounterSetNumber({
+  const [value, setValue] = useState('');
+  const { data, write, config } = useCounterSetNumber({
     args: value ? [BigInt(value)] : undefined,
     enabled: Boolean(value),
-  })
-  const { data, write } = useCounterSetNumber({
-    ...config,
     onSuccess: () => setValue(''),
-  })
+  });
 
-  const { refetch } = useCounterNumber()
+  const { refetch } = useCounterNumber();
   const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
-    onSuccess: () => refetch(),
-  })
+    onSuccess: refetch,
+  });
 
   return (
     <div>
@@ -52,37 +46,36 @@ function SetNumber() {
         onChange={(e) => setValue(e.target.value)}
         value={value}
       />
-      <button disabled={!write || isLoading} onClick={() => write?.()}>
+      <button disabled={!write || isLoading} onClick={write}>
         Set
       </button>
       {isLoading && <ProcessingMessage hash={data?.hash} />}
     </div>
-  )
+  );
 }
 
 function Increment() {
-  const { config } = usePrepareCounterIncrement()
-  const { data, write } = useCounterIncrement(config)
-
-  const { refetch } = useCounterNumber()
+  const { data, write, config } = useCounterIncrement();
+  const { refetch } = useCounterNumber();
   const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
-    onSuccess: () => refetch(),
-  })
+    onSuccess: refetch,
+  });
 
   return (
     <div>
-      <button disabled={!write || isLoading} onClick={() => write?.()}>
+      <button disabled={!write || isLoading} onClick={write}>
         Increment
       </button>
       {isLoading && <ProcessingMessage hash={data?.hash} />}
     </div>
-  )
+  );
 }
 
-function ProcessingMessage({ hash }: { hash?: `0x${string}` }) {
-  const { chain } = useNetwork()
-  const etherscan = chain?.blockExplorers?.etherscan
+function ProcessingMessage({ hash }) {
+  const { chain } = useNetwork();
+  const etherscan = chain?.blockExplorers?.etherscan;
+
   return (
     <span>
       Processing transaction...{' '}
@@ -90,5 +83,7 @@ function ProcessingMessage({ hash }: { hash?: `0x${string}` }) {
         <a href={`${etherscan.url}/tx/${hash}`}>{etherscan.name}</a>
       )}
     </span>
-  )
+  );
 }
+
+export default Counter;

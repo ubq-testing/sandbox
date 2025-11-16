@@ -1,11 +1,14 @@
-'use client'
+import React, { ReactNode } from 'react';
+import { useAccount } from 'wagmi';
 
-import type { ReactNode } from 'react'
-import { useAccount } from 'wagmi'
-
-export function Connected({ children }: { children: ReactNode }) {
-  const { isConnected } = useAccount()
-
-  if (!isConnected) return null
-  return <>{children}</>
+interface ConnectedProps {
+  children: ReactNode;
 }
+
+function Connected({ children }: ConnectedProps) {
+  const { isConnected } = useAccount();
+
+  return isConnected ? <>{children}</> : null;
+}
+
+export default Connected;
